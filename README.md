@@ -96,7 +96,9 @@ SPREADSHEET_ID=YOUR_GOOGLE_SHEET_ID
 SHEET_NAME=Reminder
 TIMEZONE=Asia/Jakarta
 CHECK_INTERVAL_MINUTES=1
+```
 
+```plaintext
 Pastikan:
 
 SPREADSHEET_ID sesuai dengan ID Google Sheet kamu.
@@ -129,3 +131,4 @@ Data processing dan update dinamis
 
 Proyek ini menggambarkan bagaimana AI workflow automation dapat digunakan untuk membuat sistem pengingat yang sepenuhnya otomatis, efisien, dan tanpa infrastruktur kompleks.
 Melalui n8n, seluruh alur — mulai dari input data, pemrosesan waktu, pengiriman pesan, hingga pembaruan status — dapat dijalankan secara end-to-end dalam satu platform.
+```
