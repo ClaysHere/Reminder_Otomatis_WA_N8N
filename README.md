@@ -1,7 +1,7 @@
 ### Anggota Kelompok:
-1. M. Fikri – NIM
-2. Irham Dinni Harahap – NIM
-3. Nama Ang 3 – NIM
+1. M. Fikri – 221110816
+2. Irham Dinni Harahap – 221111602
+3. Arda putra Sulistyo - 221111185
 
 
 
