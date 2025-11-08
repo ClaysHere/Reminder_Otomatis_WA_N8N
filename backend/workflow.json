@@ -1,0 +1,678 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        240,
+        6000
+      ],
+      "id": "f80d52fe-feff-49ff-b772-6c191ae1777c",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1z9Qgj-fSONgY7ZFuk_z3yMfCi-SyeGO82cy8WWNntOQ",
+          "mode": "list",
+          "cachedResultName": "jadwal",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1z9Qgj-fSONgY7ZFuk_z3yMfCi-SyeGO82cy8WWNntOQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 966139264,
+          "mode": "list",
+          "cachedResultName": "buatkan spreadsheet yang berisi data jadwal yang...",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1z9Qgj-fSONgY7ZFuk_z3yMfCi-SyeGO82cy8WWNntOQ/edit#gid=966139264"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        464,
+        6000
+      ],
+      "id": "f0d0d731-73f0-4115-bff3-3c9ea24acb81",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "5NEchXb3Qmyickng",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst currentTime = new Date();\nconst currentMinute = currentTime.getMinutes();\n\nconst result = items.map((item, index) => {\n  const menitSebelum = parseInt(item.json[\"Pengingat Sebelum (menit)\"]) || 0;\n  const interval = parseInt(item.json[\"Interval (menit)\"]) || 0;\n\n  const shouldTrigger =\n    currentMinute >= menitSebelum - interval && currentMinute <= menitSebelum;\n\n  return {\n    json: {\n      ...item.json, // simpan semua data dari sheet\n      currentMinute,\n      menitSebelum,\n      interval,\n      shouldTrigger,\n    },\n    pairedItem: item.pairedItem ?? [{ item: index }],\n  };\n});\n\nreturn result;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        688,
+        6000
+      ],
+      "id": "59513505-3f64-4f60-af72-7d8613fbb7b0",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "873561042501939",
+        "recipientPhoneNumber": "6285172010442",
+        "textBody": "=Halo {{$json[\"Nama\"]}}! \nKegiatan kamu: {{$json[\"Kegiatan\"]}} akan dimulai pada {{$json[\"Jam\"]}}.\n",
+        "additionalFields": {
+          "previewUrl": true
+        }
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        912,
+        6000
+      ],
+      "id": "c3ea2965-bfcf-4101-bf52-2b80478b5748",
+      "name": "Send message",
+      "webhookId": "3fef530a-10f6-41a6-bc0b-57479b0896ec",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "QoHq5DB4U6QeTb21",
+          "name": "WhatsApp account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "updates": [
+          "messages"
+        ],
+        "options": {}
+      },
+      "type": "n8n-nodes-base.whatsAppTrigger",
+      "typeVersion": 1,
+      "position": [
+        240,
+        6416
+      ],
+      "id": "f6bc8ea7-e5bb-4032-90ee-cd2732312f07",
+      "name": "WhatsApp Trigger",
+      "webhookId": "6e7e8d3e-3245-4421-bbbe-b67efa1625b0",
+      "credentials": {
+        "whatsAppTriggerApi": {
+          "id": "oRpc612XDT830nqu",
+          "name": "WhatsApp OAuth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.messages[0].text.body.toLowerCase() }}",
+                    "rightValue": "sudah",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    },
+                    "id": "fb24a645-a945-4a8e-a07e-f26a163127d9"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "6d551896-d650-4e05-b667-208ecc2ae953",
+                    "leftValue": "={{ $json.messages[0].text.body.toLowerCase() }}",
+                    "rightValue": "pengingat",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "a60dbb36-9927-4962-be6a-f15ef471343f",
+                    "leftValue": "={{ $json.messages[0].text.body.toLowerCase() }}",
+                    "rightValue": "halo",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        464,
+        6400
+      ],
+      "id": "18f25dd1-b1a3-4cc3-9dbb-db0f033a3ee5",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "873561042501939",
+        "recipientPhoneNumber": "={{ $json.messages[0].from }}",
+        "textBody": "=📌 Pengingat Jadwal 🔔\n\nIsi data berikut untuk membuat pengingat jadwal baru\n\nNama : A\nKegiatan : B\nTanggal : 2025-11-07\nJam : 16:00\nCatatan : C\nPengingat Sebelum : 5 menit\nInterval Reminder : Setiap 3 menit",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        688,
+        6608
+      ],
+      "id": "9c066a1d-8717-43e7-ba56-612fc6906b26",
+      "name": "Send message1",
+      "webhookId": "ba2288e8-2478-4fb7-bcb9-31afc5bff32d",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "QoHq5DB4U6QeTb21",
+          "name": "WhatsApp account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\nfunction findSender(obj) {\n  if (!obj || typeof obj !== 'object') return null;\n\n  const directKeys = ['from','author','sender','wa_id','remoteJid','phone'];\n  for (const k of directKeys) {\n    for (const key of Object.keys(obj)) {\n      if (key.toLowerCase() === k.toLowerCase() && obj[key]) return obj[key];\n    }\n  }\n\n  if (obj.messages && Array.isArray(obj.messages) && obj.messages.length) {\n    const m = obj.messages[0];\n    for (const k of ['from','author','id','wa_id']) {\n      if (m[k]) return m[k];\n      if (m.context && m.context[k]) return m.context[k];\n    }\n    if (m.contacts && Array.isArray(m.contacts) && m.contacts[0]) {\n      if (m.contacts[0].wa_id) return m.contacts[0].wa_id;\n      if (m.contacts[0].phone) return m.contacts[0].phone;\n    }\n  }\n\n  for (const val of Object.values(obj)) {\n    if (typeof val === 'object') {\n      const found = findSender(val);\n      if (found) return found;\n    }\n  }\n  return null;\n}\n\nfunction normalizePhone(raw) {\n  if (!raw) return null;\n  if (typeof raw === 'object') {\n    if (raw.wa_id) raw = raw.wa_id;\n    else if (raw.id) raw = raw.id;\n    else raw = JSON.stringify(raw);\n  }\n\n  let digits = String(raw).replace(/\\D/g, '');\n  if (!digits) return null;\n  digits = digits.replace(/@.*$/, '');\n  if (digits.startsWith('0')) digits = '62' + digits.slice(1);\n  if (digits.startsWith('8')) digits = '62' + digits;\n  return digits;\n}\n\nconst parsedData = items.map(item => {\n  const body = item.json?.messages?.[0]?.text?.body || item.json?.body || '';\n  const data = {};\n\n  // Ambil nomor WA pengirim dari payload\n  const rawSender = findSender(item.json);\n  const normalizedSender = normalizePhone(rawSender);\n\n  // Parse pesan teks jadi key:value\n  const lines = String(body).split(\"\\n\").map(l => l.trim()).filter(l => l);\n  lines.forEach((line) => {\n    const [keyPart, ...rest] = line.split(\":\");\n    if (!rest.length) return;\n    const key = keyPart.trim();\n    let value = rest.join(\":\").trim();\n    value = value.replace(/Setiap/gi, \"\").replace(/menit/gi, \"\").trim();\n    data[key] = value || null;\n  });\n\n  // Tambahkan Nomor Whatsapp\n  if (normalizedSender) {\n    data[\"Nomor Whatsapp\"] = normalizedSender;\n  } else if (data[\"Nomor Whatsapp\"]) {\n    data[\"Nomor Whatsapp\"] = normalizePhone(data[\"Nomor Whatsapp\"]);\n  } else {\n    data[\"Nomor Whatsapp\"] = null;\n  }\n\n  return { json: data };\n});\n\n// ✅ Return array berisi objek { json: ... }\nreturn parsedData;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        688,
+        6416
+      ],
+      "id": "b030b8c1-d35f-4942-9f4b-6e81ce5b1813",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1z9Qgj-fSONgY7ZFuk_z3yMfCi-SyeGO82cy8WWNntOQ",
+          "mode": "list",
+          "cachedResultName": "jadwal",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1z9Qgj-fSONgY7ZFuk_z3yMfCi-SyeGO82cy8WWNntOQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 966139264,
+          "mode": "list",
+          "cachedResultName": "buatkan spreadsheet yang berisi data jadwal yang...",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1z9Qgj-fSONgY7ZFuk_z3yMfCi-SyeGO82cy8WWNntOQ/edit#gid=966139264"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Nama",
+              "displayName": "Nama",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Kegiatan",
+              "displayName": "Kegiatan",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Tanggal",
+              "displayName": "Tanggal",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Jam",
+              "displayName": "Jam",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Nomor Whatsapp",
+              "displayName": "Nomor Whatsapp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Catatan",
+              "displayName": "Catatan",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Pengingat Sebelum (menit)",
+              "displayName": "Pengingat Sebelum (menit)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Interval (menit)",
+              "displayName": "Interval (menit)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Pengingat Sebelum",
+              "displayName": "Pengingat Sebelum",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Interval Reminder",
+              "displayName": "Interval Reminder",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        912,
+        6416
+      ],
+      "id": "bc603828-24dd-4d04-b180-b03078562de2",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "5NEchXb3Qmyickng",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "873561042501939",
+        "recipientPhoneNumber": "6285172010442",
+        "textBody": "=Hai {{ $json[\"Nama\"] || \"User\" }} 👋\nJadwal kamu sudah tercatat ya 📅\n\n📝 Kegiatan: {{ $json[\"Kegiatan\"] }}\n📆 Tanggal: {{ $json[\"Tanggal\"] }}\n⏰ Jam: {{ $json[\"Jam\"] }}\n🗒️ Catatan: {{ $json[\"Catatan\"] || \"-\" }}\n🔔 Pengingat sebelum: {{ $json[\"Pengingat Sebelum\"] }} menit\n🔁 Interval: {{ $json[\"Interval Reminder\"] }} menit\n\nTerima kasih, pengingat akan dikirim sesuai jadwal 👍\n",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        1136,
+        6416
+      ],
+      "id": "ae9ecf7b-ce07-4dcf-a525-ae662e33578e",
+      "name": "Send message2",
+      "webhookId": "2f7707a3-54c6-4e95-932b-8c600dae40bf",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "QoHq5DB4U6QeTb21",
+          "name": "WhatsApp account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1z9Qgj-fSONgY7ZFuk_z3yMfCi-SyeGO82cy8WWNntOQ",
+          "mode": "list",
+          "cachedResultName": "jadwal",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1z9Qgj-fSONgY7ZFuk_z3yMfCi-SyeGO82cy8WWNntOQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 966139264,
+          "mode": "list",
+          "cachedResultName": "buatkan spreadsheet yang berisi data jadwal yang...",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1z9Qgj-fSONgY7ZFuk_z3yMfCi-SyeGO82cy8WWNntOQ/edit#gid=966139264"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Status": "Done",
+            "Nomor Whatsapp": "{{ $json[\"Nomor Whatsapp\"] }}"
+          },
+          "matchingColumns": [
+            "Nomor Whatsapp"
+          ],
+          "schema": [
+            {
+              "id": "Nama",
+              "displayName": "Nama",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Kegiatan",
+              "displayName": "Kegiatan",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Tanggal",
+              "displayName": "Tanggal",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Jam",
+              "displayName": "Jam",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Nomor Whatsapp",
+              "displayName": "Nomor Whatsapp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Catatan",
+              "displayName": "Catatan",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Pengingat Sebelum",
+              "displayName": "Pengingat Sebelum",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Interval Reminder",
+              "displayName": "Interval Reminder",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        912,
+        6224
+      ],
+      "id": "13f07723-1dda-40aa-87d7-bf09bb16a922",
+      "name": "Update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "5NEchXb3Qmyickng",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\nfunction findSender(obj) {\n  if (!obj || typeof obj !== 'object') return null;\n\n  const directKeys = ['from','author','sender','wa_id','remoteJid','phone'];\n  for (const k of directKeys) {\n    for (const key of Object.keys(obj)) {\n      if (key.toLowerCase() === k.toLowerCase() && obj[key]) return obj[key];\n    }\n  }\n\n  if (obj.messages && Array.isArray(obj.messages) && obj.messages.length) {\n    const m = obj.messages[0];\n    for (const k of ['from','author','id','wa_id']) {\n      if (m[k]) return m[k];\n      if (m.context && m.context[k]) return m.context[k];\n    }\n    if (m.contacts && Array.isArray(m.contacts) && m.contacts[0]) {\n      if (m.contacts[0].wa_id) return m.contacts[0].wa_id;\n      if (m.contacts[0].phone) return m.contacts[0].phone;\n    }\n  }\n\n  for (const val of Object.values(obj)) {\n    if (typeof val === 'object') {\n      const found = findSender(val);\n      if (found) return found;\n    }\n  }\n  return null;\n}\n\nfunction normalizePhone(raw) {\n  if (!raw) return null;\n  if (typeof raw === 'object') {\n    if (raw.wa_id) raw = raw.wa_id;\n    else if (raw.id) raw = raw.id;\n    else raw = JSON.stringify(raw);\n  }\n\n  let digits = String(raw).replace(/\\D/g, '');\n  if (!digits) return null;\n  digits = digits.replace(/@.*$/, '');\n  if (digits.startsWith('0')) digits = '62' + digits.slice(1);\n  if (digits.startsWith('8')) digits = '62' + digits;\n  return digits;\n}\n\n// Ambil nomor WA, Status, dan row_number dari setiap item\nconst parsedData = items.map(item => {\n  const rawSender = findSender(item.json);\n  const normalizedSender = normalizePhone(rawSender);\n  \n  // Get row_number if it exists in the input data\n  const rowNumber = item.json.row_number || null;\n  \n  return { \n    json: { \n      \"Nomor Whatsapp\": normalizedSender || null,\n      \"Status\": \"Done\",\n      \"row_number\": rowNumber\n    } \n  };\n});\n\nreturn parsedData;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        688,
+        6224
+      ],
+      "id": "b365c33e-bba3-4de5-86f8-8dddfe9754e1",
+      "name": "Code in JavaScript2"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WhatsApp Trigger": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Send message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Send message2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript2": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "668e7127-eaa6-4346-9e3e-6c2f0be955fb",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "63629ee0563241b1cd9f7d54bfa35430c3f4fea09454b498ddd0a28c4be362af"
+  },
+  "id": "qdA98NFJUkyQgAGk",
+  "tags": []
+}
