@@ -1,0 +1,21 @@
+# ==========================
+# 🌐 Environment Variables Example
+# ==========================
+# File ini digunakan untuk menyimpan konfigurasi environment
+# agar workflow n8n dapat berjalan dengan benar.
+
+# Google Sheets
+GOOGLE_SHEET_ID=your_google_sheet_id_here
+GOOGLE_SHEET_NAME=Sheet1
+
+# WhatsApp Gateway API
+WHATSAPP_API_URL=https://your-whatsapp-gateway.example/api/send
+WHATSAPP_API_KEY=your_api_key_here
+
+# Reminder Configuration
+TIMEZONE=Asia/Jakarta
+REMINDER_INTERVAL_MINUTES=5
+
+# System Variables (Optional)
+LOG_ENABLED=true
+DEBUG_MODE=false
